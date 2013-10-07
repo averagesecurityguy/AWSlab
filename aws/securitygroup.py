@@ -49,7 +49,7 @@ class SecurityGroup():
         try:
             groups = self.__conn.get_all_security_groups(groupnames=name)
         except boto.exception.EC2ResponseError as e:
-            self.__log.critical(e['message'])
+            self.__log.critical(e.message)
             raise 'Unable to get AWS security groups.'
 
         return groups
@@ -59,7 +59,7 @@ class SecurityGroup():
         try:
             self.__conn.create_security_group(self.name, self.desc)
         except boto.exception.EC2ResponseError as e:
-            self.__log.critical(e['message'])
+            self.__log.critical(e.message)
             raise 'Could not create AWS security group.'
 
     def __get_security_group(self):
