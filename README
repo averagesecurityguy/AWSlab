@@ -1,0 +1,105 @@
+Overview
+========
+AWSlab is used to build a penetration testing lab in the Amazon EC2 cloud. The `awslab.py` script requires a bootstrap configuration file and one or more instance configuration files. The bootstrap configuration file, bootstrap.cfg, holds Amazon EC2 configuration data while the instance configuration files hold configuration data specific to each instance. Read more about each file type below.
+
+AWSlab builds purposely vulnerable machines. These machines SHOULD NOT be installed in your production AWS environment. It is recommended that you setup a separate account for AWSlab.
+
+
+Installation
+============
+Prerequisites
+-------------
+Before installing you need to have a recent version of Python 2.x, the boto
+library, and the fabric library. Mac OS X and most Linux machines have a
+suitable version of Python already installed. To get installation directions
+for boto, go here: https://github.com/boto/boto. To get installation
+directions for fabric, go here:
+http://docs.fabfile.org/en/latest/installation.html.
+
+Install awslab 
+--------------
+`git clone https://github.com/averagesecurityguy/awslab`
+
+
+Usage
+=====
+To use awslab.py specify a command and a configuration file. The following
+commands are supported:
+* `bootstrap` - Prepares the AWS region by adding the security group and key
+pair, which are specified in bootstrap.cfg, if they don't exist.
+* `start` - Either starts the instance specified by the id key in the
+configuration file or creates a new instance and updates the configuration
+file with the id. Defines the public_dns key and sets its value to the
+instances public DNS name. Also sets the first_run key to false, which allows
+instances to be stopped and started without rerunning the commands.
+* `stop` - Stops the instance specified by the id key in the instance
+configuration file. Deletes the public_dns key from the configuration file
+because the public DNS name will change when the instance starts.
+* `terminate` - Terminates the instance specified by the id key in
+the instance configuration file and removes the id key and the public_dns key
+from the instance configuration file. Also sets the first_run key back to
+true.
+
+
+Examples
+========
+Prepare the AWS region
+
+    `awslab.py bootstrap`
+
+start an existing instance or create a new one.
+
+    `awslab.py start jenkins.cfg`
+
+Stop an existing instance.
+
+    `awslab.py stop jenkins.cfg`
+
+Terminate an existing instance.
+    
+    `awslab.py terminate jenkins.cfg`
+
+
+Configuration Files
+===================
+All configuration files are in JSON format and must contain certain keys. Use
+the `verifyconfig.py` script to verify that all the expected keys are in the
+configuration file. The `verifyconfig.py` script does not validate the values
+of the keys. The lists of expected keys for each file type are defined below.
+
+Feel free to copy the included instance configuration files to create your own
+machines. Also, feel free to share your machines by submitting pull requests
+to https://github.com/averagesecurityguy/awslab.
+
+Bootstrap Configuration
+-----------------------
+The bootstrap.cfg file must include the following:
+* `aws_key` - The Amazon Web Services API key id. To obtain your API key and secret, follow these directions: http://docs.aws.amazon.com/AWSSecurityCredentials/1.0/AboutAWSCredentials.html#AccessKeys
+* `aws_secret` - The Amazon Web Services API secret.
+* `aws_region` - The Amazon region to prepare the lab in.
+* `security_group` - The security group that lab machines will be in.
+* `ssh_path` - The folder that will hold the SSH authentication key.
+* `key_pair` - The name of the SSH key pair to use with the machines. If the key pair does not exist then it will be created and the PEM file will be saved to the `ssh_path`.
+
+
+Instance Configuration
+----------------------
+Each instance configuration file must include the following:
+* `description` - Description of the server. A description tag will be added
+when the instance is created.
+* `ami` - The EC2 AMI ID to launch.
+* `type` - The EC2 instance type to launch.
+* `ssh_user` - The SSH user usually either "ec2-user" or "ubuntu".
+* `commands` - A list of commands to be run on the server once it boots. This
+can be an empty list.
+* `rules` - A list of firewall rules that should be added to the security
+group. This can be an empty list.
+* `first_run` - Should be true if this is the first time the instance has run
+and false if not.
+
+
+Instances
+=========
+The following instances are included with awslab.
+* `jenkins.cfg` - This builds a Jenkins CI server, which has a Groovy editor in the management section. The Groovy editor can be used to compromise the machine as shown in this article, http://averagesecurityguy.info/2012/07/31/one-groovy-pentest/.
+* `dvwa_mutillidae.cfg` - This builds an XAMPP server and installs Damn Vulnerable Web App and Mutillidae. You can get more details about DVWA at http://www.dvwa.co.uk/. Mutillidae details are at http://www.irongeek.com/i.php?page=mutillidae/mutillidae-deliberately-vulnerable-php-owasp-top-10. 
